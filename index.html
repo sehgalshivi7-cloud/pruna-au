@@ -224,7 +224,7 @@ function render(){
   root.querySelectorAll('[data-search]').forEach(b=>b.addEventListener('click',()=>searchShot(+b.dataset.search)));
   root.querySelectorAll('[data-q]').forEach(b=>b.addEventListener('click',()=>searchShot(+b.dataset.q,b.textContent.replace(/tap to search this concept$/,''))));
   root.querySelectorAll('[data-custombtn]').forEach(b=>b.addEventListener('click',()=>{const i=+b.dataset.custombtn;const q=root.querySelector(`[data-custom="${i}"]`).value.trim();if(q)searchShot(i,q)}));
-  root.querySelectorAll('[data-use]').forEach(b=>b.addEventListener('click',()=>{const i=+b.dataset.use, id=b.dataset.id;state.selected[i]=id;render()});
+  root.querySelectorAll('[data-use]').forEach(b=>b.addEventListener('click',()=>{const i=+b.dataset.use, id=b.dataset.id;state.selected[i]=id;render()}));
 }
 
 function resultsHtml(rs,i){
