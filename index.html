@@ -1,25 +1,296 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pexels Documentary Shot Finder V2</title>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pexels Documentary Shot Finder V3</title>
 <style>
-body{margin:0;background:#0d1117;color:#eee;font:15px system-ui;padding:14px}main{max-width:1100px;margin:auto}section{background:#151b23;border:1px solid #283241;border-radius:12px;padding:14px;margin:12px 0}textarea,input,select{width:100%;box-sizing:border-box;background:#0b1016;color:#eee;border:1px solid #384454;border-radius:8px;padding:10px;margin:6px 0}textarea{min-height:180px}button{background:#253142;color:#fff;border:1px solid #3b4858;border-radius:8px;padding:9px 12px;margin:4px;cursor:pointer}.primary{background:#62a8ff;color:#06111c}.good{background:#58d68d;color:#06150c}.shot{border:1px solid #303b49;border-radius:10px;padding:12px;margin:12px 0}.results{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.clip{border:1px solid #303b49;border-radius:9px;overflow:hidden}.clip img,.clip video{width:100%;aspect-ratio:16/9;object-fit:cover;background:#000}.clipbody{padding:8px}.muted{color:#9aa6b5;font-size:12px}.q{display:inline-block;border:1px solid #303b49;border-radius:20px;padding:4px 7px;margin:3px;font-size:12px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:700px){.results{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr}}@media(max-width:430px){.results{grid-template-columns:1fr}}
-</style></head><body><main>
-<h2>🎬 Pexels Documentary Shot Finder V2</h2><div class="muted">Hindi/Hinglish narration → visual shots → Full HD landscape Pexels clips</div>
-<section><b>Pexels API key</b><input id="key" type="password" placeholder="Paste your Pexels API key"><div class="muted">Stored only in this browser. Do not share it in chat.</div>
-<div class="row"><label>Minimum<input value="1920×1080" disabled></label><label>Results<select id="per"><option>12</option><option selected>20</option><option>40</option><option>80</option></select></label></div></section>
-<section><b>Paste your full narration</b><textarea id="script" placeholder="Paste your Hindi/Hinglish documentary narration here..."></textarea>
-<button class="primary" id="make">Break into visual shots</button><button id="save">Save project</button><button id="load">Load project</button><button id="export">Export shot list</button><div id="status" class="muted"></div></section>
-<div id="board"></div><section class="muted"><b>Pexels:</b> Keep Pexels/photographer attribution when using results.</section>
-</main>
+:root{--bg:#0b0d10;--card:#13171c;--line:#27303a;--text:#eef2f6;--muted:#9aa6b2;--accent:#7dd3fc;--good:#86efac;--warn:#fbbf24}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:1100px;margin:auto;padding:16px}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+h1{font-size:21px;margin:0}.sub{color:var(--muted);font-size:13px;margin-top:4px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:14px}
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+input,textarea,select,button{font:inherit}
+input,textarea,select{width:100%;background:#0d1115;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:10px}
+textarea{min-height:190px;resize:vertical;line-height:1.45}
+button{border:1px solid var(--line);background:#182029;color:var(--text);border-radius:9px;padding:10px 12px;cursor:pointer}
+button.primary{background:#173447;border-color:#285a73}.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1;min-width:130px}
+.controls{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.status{font-size:12px;color:var(--muted);margin-top:9px}.ok{color:var(--good)}.warn{color:var(--warn)}
+.shot{border-top:1px solid var(--line);padding:16px 0}.shot:first-child{border-top:0}
+.shothead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.shotnum{font-weight:700}.hi{font-size:14px;line-height:1.5;margin:7px 0}
+.concepts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
+.q{background:#0d1115;border:1px solid var(--line);border-radius:9px;padding:9px;font-size:13px;line-height:1.35;cursor:pointer}.q:hover{border-color:#4b6475}.q small{display:block;color:var(--muted);margin-top:4px}
+.results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}.result{border:1px solid var(--line);border-radius:11px;overflow:hidden;background:#0d1115}.result img{width:100%;aspect-ratio:16/9;object-fit:cover;background:#07090b}.rbody{padding:9px}.meta{font-size:11px;color:var(--muted);line-height:1.45}.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.actions button{font-size:12px;padding:7px 8px}
+.selected{border-color:#3b82f6}.selectedTag{color:var(--good);font-size:11px;font-weight:600}
+.empty{padding:14px;border:1px dashed var(--line);border-radius:9px;color:var(--muted);font-size:13px}
+@media(max-width:760px){.controls{grid-template-columns:1fr}.concepts{grid-template-columns:1fr}.results{grid-template-columns:1fr 1fr}}
+@media(max-width:470px){.results{grid-template-columns:1fr}.wrap{padding:10px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div><h1>Pexels Documentary Shot Finder V3</h1><div class="sub">Hindi/Hinglish narration → clean English visual concepts → 1080p/4K landscape clips</div></div>
+    <div class="row">
+      <button id="save">Save project</button><button id="load">Load project</button><button id="export">Export shot list</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="controls">
+      <div><label>Pexels API key</label><input id="key" type="password" placeholder="Paste your Pexels API key"></div>
+      <div><label>Quality</label><select id="quality"><option value="1080">1080p or higher</option><option value="4k">4K only</option></select></div>
+      <div><label>FPS preference</label><select id="fps"><option value="any">Any FPS</option><option value="24">24 fps</option><option value="25">25 fps</option><option value="30">30 fps</option><option value="60">60 fps</option></select></div>
+    </div>
+    <div class="controls" style="margin-top:10px">
+      <div><label>Results per search</label><select id="per"><option>12</option><option selected>20</option><option>40</option><option>80</option></select></div>
+      <div><label>Shots to process</label><select id="limit"><option>5</option><option>10</option><option selected>15</option><option>25</option><option>50</option></select></div>
+      <div><label>Visual mode</label><select id="mode"><option value="documentary">Documentary / realistic</option><option value="literal">Literal action</option><option value="archive">Archive / investigation</option></select></div>
+    </div>
+    <div style="margin-top:10px">
+      <label>Full narration</label>
+      <textarea id="narration" placeholder="Paste your complete Hindi/Hinglish documentary narration here..."></textarea>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="primary" id="analyze">Analyze narration</button>
+      <button id="searchAll">Find clips for all shots</button>
+      <button id="clear">Clear</button>
+    </div>
+    <div id="status" class="status">Your API key stays in this browser's local storage. It is sent only to Pexels.</div>
+  </div>
+
+  <div id="shots" class="card"><div class="empty">Paste narration and tap <b>Analyze narration</b>.</div></div>
+
+  <div class="card" style="font-size:12px;color:var(--muted)">
+    <b style="color:var(--text)">Pexels note:</b> This tool searches Pexels' official video API, uses landscape/quality filters, and filters returned files by actual pixel dimensions and aspect ratio. Pexels requests prominent attribution and photographer credit when possible.
+  </div>
+</div>
+
 <script>
-const $=s=>document.querySelector(s),board=$("#board"),status=$("#status");let p={shots:[]};$("#key").value=localStorage.getItem("pexelsKey")||"";$("#key").onchange=()=>localStorage.setItem("pexelsKey",$("#key").value.trim());
-const esc=x=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
-function sentences(t){return t.replace(/\r/g,"").split(/(?<=[।!?])\s+|\n+/).map(x=>x.trim()).filter(x=>x.length>12)}
-function analyze(s){let l=s.toLowerCase(),c="realistic documentary scene: "+s.slice(0,140);let rules=[[/track|monitor|निगरानी|नज़र/,"surveillance and observation"],[/follow|पीछा/,"person being followed"],[/meet|मिल|बैठ/,"secret meeting"],[/leave|निकला|बाहर/,"person leaving a building"],[/enter|अंदर|चढ़/,"person entering a place"],[/walk|चल|जाता|जाना/,"person walking"],[/drive|गाड़ी|बस|car/,"vehicle driving"],[/document|कागज़|फाइल|file/,"intelligence documents"],[/phone|फोन|call/,"secret phone call"],[/watch|देख|देखना/,"person watching from a distance"],[/night|रात/,"nighttime scene"]];for(const [r,v] of rules)if(r.test(l)){c=v+" — "+s.slice(0,120);break}let b=s.replace(/[^\p{L}\p{N}\s-]/gu," ").replace(/\s+/g," ").slice(0,80);return{visual:c,queries:[b+" realistic documentary footage",b+" surveillance street footage",b+" person observed from distance",b+" cinematic documentary footage"]}}
-function render(){board.innerHTML="";p.shots.forEach((s,i)=>{let e=document.createElement("section");e.className="shot";e.innerHTML='<b style="color:#62a8ff">SHOT '+(i+1)+'</b><p>'+esc(s.text)+'</p><div class="muted">Visual: '+esc(s.visual)+'</div><div>'+s.queries.map(q=>'<span class="q">'+esc(q)+'</span>').join("")+'</div><button class="primary search">🔎 Search Pexels</button><button class="alt">🔄 Find alternative</button><div class="results"></div>';e.querySelector(".search").onclick=()=>search(s,e,false);e.querySelector(".alt").onclick=()=>search(s,e,true);board.appendChild(e);if(s.results)show(s,e)})}
-function best(v){return (v.video_files||[]).filter(f=>f.file_type==="video/mp4"&&f.width>=1920&&f.height>=1080&&f.width/f.height>1.5).sort((a,b)=>b.width*b.height-a.width*a.height)[0]}
-async function search(s,e,alt){let k=$("#key").value.trim();if(!k){status.textContent="Paste your Pexels API key first.";return}let q=(alt?s.queries.slice().reverse():s.queries)[(s.n||0)%4];s.n=(s.n||0)+1;status.textContent="Searching: "+q;try{let u=new URL("https://api.pexels.com/v1/videos/search");u.searchParams.set("query",q);u.searchParams.set("orientation","landscape");u.searchParams.set("size","medium");u.searchParams.set("per_page",$("#per").value);let r=await fetch(u,{headers:{Authorization:k}});if(!r.ok)throw Error("Pexels API "+r.status);let d=await r.json();s.results=(d.videos||[]).map(v=>{let f=best(v);return f?{id:v.id,url:v.url,image:v.image,duration:v.duration,width:f.width,height:f.height,fps:f.fps,link:f.link,creator:v.user?.name||"Unknown"}:null}).filter(Boolean);show(s,e);status.textContent="Found "+s.results.length+" Full HD+ landscape clips."}catch(x){status.textContent="Search failed: "+x.message}}
-function show(s,e){let box=e.querySelector(".results");box.innerHTML="";(s.results||[]).forEach(v=>{let c=document.createElement("div");c.className="clip";c.innerHTML='<img src="'+esc(v.image)+'"><div class="clipbody"><b>'+v.width+'×'+v.height+'</b> · '+Number(v.fps||0).toFixed(2)+' fps · '+v.duration+'s<div class="muted">'+esc(v.creator)+'<br><a target="_blank" href="'+esc(v.url)+'">Pexels page</a></div><button class="good use">Use this clip</button><button class="preview">Preview</button></div>';c.querySelector(".use").onclick=()=>{s.selected=v;render();status.textContent="Clip assigned to shot "+(p.shots.indexOf(s)+1)};c.querySelector(".preview").onclick=()=>{let vid=document.createElement("video");vid.controls=true;vid.autoplay=true;vid.src=v.link;c.prepend(vid);c.querySelector("img").remove()};box.appendChild(c)})}
-$("#make").onclick=()=>{let t=$("#script").value.trim();if(!t){status.textContent="Paste your narration first.";return}p.shots=sentences(t).map((text,i)=>{let a=analyze(text);return{id:Date.now()+"-"+i,text,visual:a.visual,queries:a.queries,results:null,selected:null}});render();status.textContent="Created "+p.shots.length+" shots."};
-$("#save").onclick=()=>{localStorage.setItem("pexelsProjectV2",JSON.stringify({script:$("#script").value,p}));status.textContent="Project saved."};
-$("#load").onclick=()=>{let x=localStorage.getItem("pexelsProjectV2");if(!x){status.textContent="No saved project.";return}let d=JSON.parse(x);$("#script").value=d.script||"";p=d.p;render();status.textContent="Project loaded."};
-$("#export").onclick=()=>{let t=p.shots.map((s,i)=>"SHOT "+(i+1)+"\n"+s.text+"\nVisual: "+s.visual+"\nQueries: "+s.queries.join(" | ")+"\nSelected: "+(s.selected?.url||"NONE")+"\n").join("\n"),a=document.createElement("a");a.href=URL.createObjectURL(new Blob([t],{type:"text/plain"}));a.download="pexels-shot-list.txt";a.click()}
-</script></body></html>
+const $=id=>document.getElementById(id);
+const state={shots:[], selected:{}, results:{}};
+
+const dict = {
+  investigation:["investigation","जांच","जाँच","तफ्तीश","investigate","investigating"],
+  attack:["attack","हमला","हमले","assault","strike"],
+  militant:["militant","militants","मिलिटेंट","fighters","fighters","लड़ाके","लड़ाकों"],
+  palestinian:["palestinian","फिलिस्तीनी","फिलिस्तीन"],
+  bedouin:["bedouin","बद्दून","बेदुइन"],
+  agents:["agents","agent","एजेंट","एजेंट्स","intelligence officers","officers"],
+  mossad:["mossad","मोसाद"],
+  intelligence:["intelligence","इंटेलिजेंस","खुफिया","खुफिया एजेंसी","spy","spies","जासूस"],
+  surveillance:["surveillance","निगरानी","monitoring","track","tracking","follow","पीछा"],
+  routine:["daily routine","routine","दिनचर्या","कब उठता","कब बाहर जाता","अकेला"],
+  documents:["documents","document","फाइल","फाइलें","files","papers","कागजात","evidence","सबूत"],
+  photograph:["photograph","photographs","photo","photos","तस्वीर","तस्वीरें","फोटो"],
+  camera:["camera","कैमरा","photographer","photography"],
+  street:["street","सड़क","सड़क","road","गली","बाजार","market"],
+  house:["house","घर","building","इमारत","कमरा","room"],
+  car:["car","गाड़ी","गाड़ी","vehicle","वाहन","bus","बस"],
+  border:["border","सीमा","crossing","checkpoint","चेकपोस्ट"],
+  map:["map","नक्शा","मानचित्र","location","स्थान"],
+  phone:["phone","फोन","mobile","मोबाइल","telephone","call","कॉल"],
+  meeting:["meeting","मुलाकात","बैठक","meet","मिलना","conference"],
+  escape:["escape","भाग","भागना","flee","fled","फरार"],
+  kill:["shot","shoot","shooting","गोली","गोली मार","killed","हत्या"],
+  child:["child","बच्चा","बच्चे","kid","boy","girl"],
+  crowd:["crowd","भीड़","लोग","people","group"],
+  night:["night","रात","dark","अंधेरा","evening","शाम"],
+  morning:["morning","सुबह","dawn","sunrise"],
+  airport:["airport","हवाई अड्डा","flight","विमान"],
+  sea:["sea","समुद्र","coast","समुद्र तट","port","बंदरगाह"],
+  train:["train","ट्रेन","railway","रेलवे","station","स्टेशन"],
+  bus:["bus","बस","coach"],
+  city:["city","शहर","urban","town"],
+  village:["village","गांव","गाँव","rural"],
+  weapon:["weapon","weapons","हथियार","gun","rifle","बंदूक"],
+  follow:["follow","पीछा","track","नज़र रखना","नजर रखना"],
+  alone:["alone","अकेला","अकेले","isolated"],
+  death:["death","मौत","dead","मृत","लाश"],
+  history:["history","इतिहास","historical","पुराना","old"],
+  secret:["secret","गुप्त","secretly","छिपकर","hidden"],
+  planning:["plan","planning","योजना","तैयारी","prepare","तैयार"]
+};
+
+const actionWords = {
+  investigation:"investigating an incident",
+  attack:"investigating an attack",
+  surveillance:"conducting surveillance",
+  routine:"monitoring a person's daily routine",
+  documents:"examining classified documents",
+  photograph:"studying surveillance photographs",
+  meeting:"observing a secret meeting",
+  escape:"tracking a fleeing suspect",
+  kill:"investigating a shooting",
+  planning:"planning an intelligence operation",
+  follow:"following a suspect",
+  secret:"conducting a covert operation",
+  map:"studying a map and locations",
+  border:"watching a border checkpoint",
+  phone:"monitoring phone communications",
+  weapon:"examining weapons and evidence"
+};
+
+function has(text, arr){return arr.some(x=>text.toLowerCase().includes(x.toLowerCase()))}
+function detect(text){
+  const low=text.toLowerCase(), found=[];
+  for(const [k,arr] of Object.entries(dict)) if(has(low,arr)) found.push(k);
+  return found;
+}
+function splitNarration(t){
+  t=t.replace(/\r/g,' ').replace(/[ \t]+/g,' ').trim();
+  if(!t)return [];
+  // Keep Hindi sentence punctuation, but also split very long spoken lines at conjunctions.
+  let parts=t.split(/(?<=[।!?])\s+|(?<=[.!?])\s+/).map(x=>x.trim()).filter(Boolean);
+  const out=[];
+  for(const p of parts){
+    if(p.length<=330){out.push(p);continue}
+    const chunks=p.split(/\s+(?=और|ओर|लेकिन|पर|अब|फिर|तो|मतलब|तभी|जब|जिसके|जिससे)\s+/i);
+    let cur='';
+    for(const c of chunks){
+      if((cur+' '+c).trim().length>300){if(cur.trim())out.push(cur.trim());cur=c}else cur=(cur+' '+c).trim();
+    }
+    if(cur)out.push(cur);
+  }
+  return out;
+}
+function unique(a){return [...new Set(a.filter(Boolean))]}
+function clean(s){return s.replace(/\s+/g,' ').trim()}
+function conceptsFor(text){
+  const tags=detect(text), entities=[];
+  if(tags.includes('mossad'))entities.push('Israeli intelligence agents');
+  else if(tags.includes('agents')||tags.includes('intelligence'))entities.push('intelligence agents');
+  if(tags.includes('militant'))entities.push('militant fighters');
+  if(tags.includes('palestinian'))entities.push('Palestinian fighters');
+  if(tags.includes('bedouin'))entities.push('Bedouin fighters');
+  if(tags.includes('child'))entities.push('a child');
+  if(tags.includes('car')||tags.includes('bus'))entities.push('a vehicle');
+  if(tags.includes('border'))entities.push('a border checkpoint');
+  if(tags.includes('street'))entities.push('a city street');
+  if(tags.includes('house'))entities.push('a residential building');
+
+  let action='';
+  for(const k of ['investigation','surveillance','routine','documents','photograph','meeting','escape','kill','planning','follow','secret','map','border','phone','weapon','attack']){
+    if(tags.includes(k)){action=actionWords[k];break}
+  }
+  if(!action){
+    if(tags.includes('history'))action='historical documentary scene';
+    else if(tags.includes('night'))action='covert activity at night';
+    else if(tags.includes('morning'))action='early morning street activity';
+    else action='realistic documentary scene';
+  }
+
+  const subject=entities.length?entities.slice(0,2).join(' and '):'intelligence investigators';
+  const mode=$('mode').value;
+  const qs=[];
+  if(mode==='archive'){
+    qs.push(`${subject} ${action}, archival intelligence documentary`);
+    qs.push(`historical intelligence investigation, ${subject}, documentary footage`);
+  }else if(mode==='literal'){
+    qs.push(`${subject} ${action}, realistic footage`);
+    qs.push(`real world ${action}, ${subject}`);
+  }else{
+    qs.push(`${subject} ${action}, realistic documentary footage`);
+    qs.push(`undercover ${action}, intelligence documentary style`);
+  }
+  if(tags.includes('documents')||tags.includes('photograph'))qs.push(`agents examining ${tags.includes('photograph')?'surveillance photographs':'classified documents'}, realistic office footage`);
+  if(tags.includes('street')||tags.includes('city'))qs.push(`intelligence surveillance on a city street, realistic documentary footage`);
+  if(tags.includes('routine')||tags.includes('follow'))qs.push(`undercover agents discreetly watching a suspect, street surveillance footage`);
+  if(tags.includes('attack')||tags.includes('kill'))qs.push(`investigators examining evidence after an attack, realistic documentary footage`);
+  if(tags.includes('border'))qs.push(`surveillance at a border checkpoint, intelligence documentary footage`);
+  if(tags.includes('phone'))qs.push(`intelligence officers monitoring phone communications, realistic office footage`);
+  if(tags.includes('map'))qs.push(`intelligence officers studying maps and locations, documentary footage`);
+  if(tags.includes('weapon'))qs.push(`investigators examining weapons as evidence, realistic documentary footage`);
+  if(tags.includes('night'))qs.push(`covert surveillance at night, realistic street footage`);
+  if(tags.includes('meeting'))qs.push(`secret meeting observed from a distance, realistic documentary footage`);
+  qs.push(`close up of intelligence evidence and investigation materials, documentary footage`);
+  return unique(qs).slice(0,5).map(clean);
+}
+
+function render(){
+  const root=$('shots');
+  if(!state.shots.length){root.innerHTML='<div class="empty">No shots yet. Analyze your narration first.</div>';return}
+  root.innerHTML=state.shots.map((s,i)=>{
+    const rs=state.results[i]||[];
+    return `<section class="shot" data-shot="${i}">
+      <div class="shothead"><div><div class="shotnum">SHOT ${i+1}</div><div class="hi">${escapeHtml(s.text)}</div></div><button data-search="${i}" class="primary">Find clips</button></div>
+      <div class="concepts">${s.queries.map((q,j)=>`<div class="q" data-q="${i}" data-qidx="${j}">${escapeHtml(q)}<small>tap to search this concept</small></div>`).join('')}</div>
+      <div class="row"><input data-custom="${i}" placeholder="Custom English search query for this shot"><button data-custombtn="${i}">Search custom</button></div>
+      <div id="res-${i}">${rs.length?resultsHtml(rs,i):'<div class="empty" style="margin-top:10px">No clips loaded yet.</div>'}</div>
+    </section>`
+  }).join('');
+  root.querySelectorAll('[data-search]').forEach(b=>b.addEventListener('click',()=>searchShot(+b.dataset.search)));
+  root.querySelectorAll('[data-q]').forEach(b=>b.addEventListener('click',()=>searchShot(+b.dataset.q,b.textContent.replace(/tap to search this concept$/,''))));
+  root.querySelectorAll('[data-custombtn]').forEach(b=>b.addEventListener('click',()=>{const i=+b.dataset.custombtn;const q=root.querySelector(`[data-custom="${i}"]`).value.trim();if(q)searchShot(i,q)}));
+  root.querySelectorAll('[data-use]').forEach(b=>b.addEventListener('click',()=>{const i=+b.dataset.use, id=b.dataset.id;state.selected[i]=id;render()});
+}
+
+function resultsHtml(rs,i){
+ return `<div class="results">${rs.map(v=>`<article class="result ${state.selected[i]==v.id?'selected':''}">
+   <img src="${v.image}" alt="Pexels video preview" loading="lazy">
+   <div class="rbody">
+    <div style="font-size:13px;font-weight:650">${escapeHtml(v.width+'×'+v.height+' • '+v.fps+' fps • '+v.duration+'s')}</div>
+    <div class="meta">${escapeHtml(v.creator)}<br>${v.fileWidth}×${v.fileHeight} file • ${v.ratio.toFixed(2)}:1</div>
+    ${state.selected[i]==v.id?'<div class="selectedTag">✓ Selected for this shot</div>':''}
+    <div class="actions"><button data-use="${i}" data-id="${v.id}">Use this clip</button><button data-preview="${escapeAttr(v.link)}">Preview</button><a href="${escapeAttr(v.url)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;padding:7px 8px;border:1px solid var(--line);border-radius:9px;color:var(--text);text-decoration:none;font-size:12px">Pexels page</a></div>
+   </div>
+ </article>`).join('')}</div>`;
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function escapeAttr(s){return escapeHtml(s)}
+
+async function searchShot(i,override){
+ const key=$('key').value.trim(); if(!key){setStatus('Add your Pexels API key first.','warn');return}
+ localStorage.setItem('pexels_doc_key',key);
+ const q=override||state.shots[i].queries[0];
+ const per=+$('per').value, quality=$('quality').value;
+ setStatus(`Searching SHOT ${i+1}: ${q}`,'');
+ try{
+   const size=quality==='4k'?'large':'medium';
+   const url=`https://api.pexels.com/v1/videos/search?query=${encodeURIComponent(q)}&orientation=landscape&size=${size}&per_page=${per}&locale=en-US`;
+   const r=await fetch(url,{headers:{Authorization:key}});
+   if(!r.ok)throw new Error(`Pexels HTTP ${r.status}`);
+   const data=await r.json();
+   const wanted=$('fps').value;
+   const candidates=[];
+   for(const v of (data.videos||[])){
+     const files=(v.video_files||[]).filter(f=>f.file_type==='video/mp4'&&f.width>=1920&&f.height>=1080&&f.width/f.height>=1.5&&f.width/f.height<=1.9);
+     if(!files.length)continue;
+     files.sort((a,b)=>{
+       const af=wanted==='any'?0:Math.abs((a.fps||0)-+wanted);
+       const bf=wanted==='any'?0:Math.abs((b.fps||0)-+wanted);
+       return af-bf || (b.width*b.height-a.width*a.height);
+     });
+     const f=files[0];
+     if(wanted!=='any' && Math.abs((f.fps||0)-+wanted)>0.6)continue;
+     candidates.push({id:v.id,image:v.image,url:v.url,creator:v.user?.name||'Unknown',width:v.width,height:v.height,duration:v.duration,fps:f.fps||0,fileWidth:f.width,fileHeight:f.height,ratio:f.width/f.height,link:f.link});
+   }
+   candidates.sort((a,b)=> (b.fileWidth*b.fileHeight-a.fileWidth*a.fileHeight) || (b.fps-a.fps));
+   state.results[i]=candidates;
+   render();
+   setStatus(`SHOT ${i+1}: ${candidates.length} usable clips found. Pexels returned ${data.total_results||0} matching videos.`,'ok');
+ }catch(e){setStatus(`SHOT ${i+1} failed: ${e.message}`,'warn')}
+}
+async function searchAll(){
+ if(!state.shots.length){setStatus('Analyze narration first.','warn');return}
+ for(let i=0;i<state.shots.length;i++){await searchShot(i); await new Promise(r=>setTimeout(r,350))}
+}
+function setStatus(t,c){$('status').textContent=t;$('status').className='status '+(c||'')}
+$('analyze').addEventListener('click',()=>{
+ const parts=splitNarration($('narration').value).slice(0,+$('limit').value);
+ state.shots=parts.map(text=>({text,queries:conceptsFor(text)}));
+ state.results={};state.selected={};render();
+ setStatus(`${state.shots.length} shots created. Queries are generated from the visual meaning of each line, not by sending Hindi text to Pexels.`,'ok');
+});
+$('searchAll').addEventListener('click',searchAll);
+$('clear').addEventListener('click',()=>{state.shots=[];state.results={};state.selected={};$('narration').value='';render();setStatus('Cleared.','')});
+$('key').value=localStorage.getItem('pexels_doc_key')||'';
+$('save').addEventListener('click',()=>{localStorage.setItem('pexels_doc_project',JSON.stringify({shots:state.shots,selected:state.selected,results:state.results,narration:$('narration').value,quality:$('quality').value,fps:$('fps').value,mode:$('mode').value}));setStatus('Project saved on this device.','ok')});
+$('load').addEventListener('click',()=>{try{const p=JSON.parse(localStorage.getItem('pexels_doc_project')||'null');if(!p)throw new Error('No saved project');Object.assign(state,{shots:p.shots||[],selected:p.selected||{},results:p.results||{}});$('narration').value=p.narration||'';$('quality').value=p.quality||'1080';$('fps').value=p.fps||'any';$('mode').value=p.mode||'documentary';render();setStatus('Project loaded.','ok')}catch(e){setStatus(e.message,'warn')}});
+$('export').addEventListener('click',()=>{if(!state.shots.length){setStatus('Nothing to export.','warn');return}let out='PEXELS DOCUMENTARY SHOT LIST\\n\\n';state.shots.forEach((s,i)=>{out+=`SHOT ${i+1}\\n${s.text}\\nQueries:\\n${s.queries.map(q=>' - '+q).join('\\n')}\\n`;const id=state.selected[i];const v=(state.results[i]||[]).find(x=>x.id==id);if(v)out+=`Selected: ${v.url}\\n`;out+='\\n'});const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out],{type:'text/plain'}));a.download='pexels-shot-list.txt';a.click();setStatus('Shot list exported.','ok')});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-preview]');if(b){window.open(b.dataset.preview,'_blank','noopener') }});
+</script>
+</body>
+</html>
